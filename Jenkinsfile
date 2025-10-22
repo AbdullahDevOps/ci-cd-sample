@@ -56,26 +56,23 @@ pipeline {
     stage('Docker Build & Push') {
       steps {
         // Requires a Jenkins credential: kind "Username with password", ID "dockerhub"
-        withCredentials([usernamePassword(credentialsId: 'dockerhub',
-                                          usernameVariable: 'DH_USER',
-                                          passwordVariable: 'DH_PASS')]) {
-          sh """
-            echo "Logging in to Docker Hub as ${DH_USER}…"
-            echo "${DH_PASS}" | docker login -u "${DH_USER}" --password-stdin
+        
+	withCredentials([usernamePassword(credentialsId: 'dockerhub',
+                                  usernameVariable: 'DH_USER',
+                                  passwordVariable: 'DH_PASS')]) {
+  	sh '''
+       	 echo "$DH_PASS" | docker login -u "$DH_USER" --password-stdin
 
-            echo "Building image ${IMAGE_NAME}:${IMAGE_TAG}…"
-            docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
+     	docker build -t "$IMAGE_NAME:$IMAGE_TAG" .
+    	docker tag "$IMAGE_NAME:$IMAGE_TAG" "$IMAGE_NAME:latest"
 
-            echo "Tagging latest…"
-            docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest
+    	docker push "$IMAGE_NAME:$IMAGE_TAG"
+    	docker push "$IMAGE_NAME:latest"
 
-            echo "Pushing tags…"
-            docker push ${IMAGE_NAME}:${IMAGE_TAG}
-            docker push ${IMAGE_NAME}:latest
+    	docker logout || true
+      '''
 
-            docker logout || true
-          """
-        }
+	}
       }
     }
 
