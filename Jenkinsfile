@@ -72,7 +72,7 @@ pipeline {
     	docker logout || true
       '''
 
-	}
+	   }
       }
     }
 
